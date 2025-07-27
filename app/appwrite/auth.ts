@@ -1,4 +1,4 @@
-import {account, appwriteConfig, database} from "~/appwrite/clint";
+import {account, appwriteConfig, database} from "~/appwrite/client";
 import {ID, OAuthProvider, Query} from "appwrite";
 import {redirect} from "react-router";
 
@@ -16,7 +16,7 @@ export const getExistingUser = async (id: string) => {
     }
 };
 
-export  const loginWithGoogle = async () => {
+export const loginWithGoogle = async () => {
     try {
         account.createOAuth2Session(OAuthProvider.Google)
     } catch (e) {
@@ -52,11 +52,11 @@ export const getUser = async () => {
     }
 }
 
-export  const logoutUser = async () => {
+export const logoutUser = async () => {
     try {
-
+        await account.deleteSession('current');
     } catch (e) {
-        console.log(e);
+        console.log('logoutUser',e);
     }
 }
 
@@ -83,7 +83,8 @@ export const getGooglePicture = async () => {
         );
 
         if (!response.ok) {
-            console.log('Failed to fetch profile photo from Google People API')
+            console.log('Failed to fetch profile photo from Google People API');
+            return null;
         }
 
         const data = await response.json();
@@ -103,17 +104,15 @@ export const getGooglePicture = async () => {
 export const storeUserData = async () => {
     try {
         // Get current user
-        const currentUser = await account.get();
+        const user = await account.get();
 
-        if (!currentUser) {
-            throw new Error('No user logged in');
-        }
+        if (!user) return null;
 
         // Check if user already exists in database
         const { documents } = await database.listDocuments(
             appwriteConfig.databaseId,
             appwriteConfig.userCollectionId,
-            [Query.equal('accountId', currentUser.$id)]
+            [Query.equal('accountId', user.$id)]
         );
 
         // If user already exists, return the user document
@@ -130,9 +129,9 @@ export const storeUserData = async () => {
             appwriteConfig.userCollectionId,
             ID.unique(),
             {
-                accountId: currentUser.$id,
-                email: currentUser.email,
-                name: currentUser.name,
+                accountId: user.$id,
+                email: user.email,
+                name: user.name,
                 imageUrl: profilePhotoUrl || '',
                 joinedAt: new Date().toISOString(),
             }

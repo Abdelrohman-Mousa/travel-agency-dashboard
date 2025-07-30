@@ -8,10 +8,7 @@ const NavItems = ({ handleClick }: { handleClick?: () => void}) => {
     const navigate = useNavigate();
 
     const handleLogout = async () => {
-        console.log("started log out")
         await logoutUser();
-        console.log("done log out")
-
         navigate('/sign-in');
         // window.location.href = '/sign-in';
     }

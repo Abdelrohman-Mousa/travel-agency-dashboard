@@ -18,11 +18,16 @@ export const getExistingUser = async (id: string) => {
 
 export const loginWithGoogle = async () => {
     try {
-        account.createOAuth2Session(OAuthProvider.Google)
+        account.createOAuth2Session(
+            'google',
+            'http://localhost:5173',         // success redirect
+            'http://localhost:5173/sign-in'  // failure redirect
+        );
     } catch (e) {
-        console.log('loginWithGoogle' ,e);
+        console.log('loginWithGoogle', e);
     }
 }
+
 
 export const getUser = async () => {
     try {
@@ -141,5 +146,23 @@ export const storeUserData = async () => {
     } catch (e) {
         console.log('storeUserData error:', e);
         return null;
+    }
+}
+
+// ✅ عدّل الدالة تستقبل object:
+export const getAllUsers = async ({ limit, offset }: { limit: number; offset: number }) => {
+    try {
+        const { documents: users, total } = await database.listDocuments(
+            appwriteConfig.databaseId,
+            appwriteConfig.userCollectionId,
+            [Query.limit(limit), Query.offset(offset)]
+        );
+
+        if (total === 0) return { users: [], total };
+
+        return { users, total };
+    } catch (e) {
+        console.log('Error fetching users');
+        return { users: [], total: 0 };
     }
 }

@@ -10,7 +10,6 @@ const NavItems = ({ handleClick }: { handleClick?: () => void}) => {
     const handleLogout = async () => {
         await logoutUser();
         navigate('/sign-in');
-        // window.location.href = '/sign-in';
     }
 
     return (
